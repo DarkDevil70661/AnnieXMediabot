@@ -4,6 +4,8 @@
 # DEVELOPER - THE SHIV
 
 import asyncio
+import aiohttp
+import logging
 from collections import defaultdict
 
 from ntgcalls import (ConnectionNotFound, TelegramServerError,
@@ -17,12 +19,96 @@ from AloneX import app, config, db, lang, logger, queue, userbot, yt
 from AloneX.helpers import Media, Track, buttons, thumb, utils, vclogger
 
 
+# ==========================================
+# 🛑 GLOBAL ERROR HANDLER & STATE SYNC
+# ==========================================
+def handle_asyncio_exceptions(loop, context):
+    msg = context.get("exception", context.get("message"))
+    msg_str = str(msg).lower()
+    
+    expected_sync_events = [
+        "groupcall_forbidden", 
+        "setvideocallstatus", 
+        "groupcall_invalid", 
+        "no active group call", 
+        "group call has already ended",
+        "not in a call"
+    ]
+    
+    if any(err in msg_str for err in expected_sync_events):
+        logging.getLogger("asyncio").info(f"ℹ️ VC State Sync (Harmless): {msg}")
+    else:
+        logging.getLogger("asyncio").error(f"❌ Unhandled Asyncio Error: {msg}")
+
+try:
+    loop = asyncio.get_running_loop()
+except RuntimeError:
+    loop = asyncio.get_event_loop()
+loop.set_exception_handler(handle_asyncio_exceptions)
+
+
 async def _delete_msg(msg: Message, delay: int = 6):
     try:
         await asyncio.sleep(delay)
         await msg.delete()
     except Exception:
         pass
+
+
+# ----------------------------------------------------
+# 🚀 1. API BASED AUTOPLAY (Find Related Tracks without Cookies)
+# ----------------------------------------------------
+async def get_related_via_api(video_id: str, history: list):
+    api_key = getattr(config, "YOUTUBE_API_KEY", None)
+    if not api_key:
+        return None
+        
+    url = f"https://www.googleapis.com/youtube/v3/search?part=snippet&relatedToVideoId={video_id}&type=video&key={api_key}&maxResults=10"
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url) as resp:
+                if resp.status == 200:
+                    data = await resp.json()
+                    for item in data.get("items", []):
+                        vid = item.get("id", {}).get("videoId")
+                        if vid and vid not in history:
+                            title = item.get("snippet", {}).get("title", "Unknown Track")
+                            return Track(
+                                id=vid,
+                                title=title,
+                                url=f"https://www.youtube.com/watch?v={vid}",
+                                duration="00:00",
+                                user="Autoplay",
+                                video=False
+                            )
+    except Exception as e:
+        logger.error(f"Autoplay API Error: {e}")
+    return None
+
+# ----------------------------------------------------
+# 🚀 2. API BASED STREAM URL (Replaces yt.download & Cookies)
+# ----------------------------------------------------
+async def get_stream_via_api(video_id: str, video: bool = False):
+    # 🔗 USING YOUR CUSTOM API URL HERE
+    api_url = f"https://teaminflex.xyz/streams/{video_id}"
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.get(api_url) as resp:
+                if resp.status == 200:
+                    data = await resp.json()
+                    audio_streams = data.get("audioStreams", [])
+                    video_streams = data.get("videoStreams", [])
+                    
+                    if video and video_streams:
+                        # Find 720p or highest available video stream
+                        stream = next((s for s in video_streams if s.get("quality") == "720p"), video_streams[0])
+                        return stream.get("url")
+                    elif audio_streams:
+                        # Find highest bitrate audio stream
+                        return audio_streams[0].get("url")
+    except Exception as e:
+        logger.error(f"Stream Fetch API Error: {e}")
+    return None
 
 
 class TgCall(PyTgCalls):
@@ -39,29 +125,36 @@ class TgCall(PyTgCalls):
         self.autoplay_prefetching.add(chat_id)
         try:
             await asyncio.sleep(3) 
+            
+            # ✅ BACKGROUND DOWNLOADING ENABLED FOR QUEUED TRACK (API Based)
             try:
                 q = queue.get(chat_id)
                 if q and isinstance(q, list) and len(q) > 1:
                     next_track = q[1]
-                    # ✅ BACKGROUND DOWNLOADING ENABLED FOR QUEUED TRACK
                     if not next_track.file_path:
-                        next_track.file_path = await yt.download(next_track.id, video=next_track.video)
+                        try:
+                            next_track.file_path = await get_stream_via_api(next_track.id, video=next_track.video)
+                        except Exception as e:
+                            logger.error(f"Prefetch Queue Download Error: {e}")
                     return 
             except Exception:
                 pass
 
+            # ✅ BACKGROUND DOWNLOADING ENABLED FOR AUTOPLAY (API Based)
             if await db.get_autoplay(chat_id):
                 current = queue.get_current(chat_id)
                 if current and isinstance(current, Track):
-                    related = await yt.get_related(current, self.history[chat_id])
+                    related = await get_related_via_api(current.id, self.history[chat_id])
                     if related:
-                        # ✅ BACKGROUND DOWNLOADING ENABLED FOR AUTOPLAY
-                        related.file_path = await yt.download(related.id, video=related.video)
+                        if not related.file_path:
+                            try:
+                                related.file_path = await get_stream_via_api(related.id, video=related.video)
+                            except Exception as e:
+                                logger.error(f"Prefetch Autoplay Download Error: {e}")
                         self.pending_autoplay[chat_id] = related
         except Exception:
             pass
         finally:
-            # Safely remove from prefetching to avoid permanent locks
             self.autoplay_prefetching.discard(chat_id)
 
     async def pause(self, chat_id: int) -> bool:
@@ -92,10 +185,18 @@ class TgCall(PyTgCalls):
         self.pending_autoplay.pop(chat_id, None)
         self.autoplay_prefetching.discard(chat_id)
         vclogger.clear_chat(chat_id)
+        
+        # 🟢 SAFE VC LEAVE
         try:
             await client.leave_call(chat_id, close=False)
-        except:
-            pass
+            logger.info(f"✅ Assistant left VC successfully in chat {chat_id}.")
+        except Exception as e:
+            error_msg = str(e).lower()
+            ignore_list = ["no active group call", "already ended", "not in a call", "groupcall_forbidden", "groupcall_invalid"]
+            if any(ign in error_msg for ign in ignore_list):
+                logger.info(f"ℹ️ Assistant State Sync: VC already closed in {chat_id}.")
+            else:
+                logger.error(f"❌ Assistant failed to leave VC in {chat_id}: {e}")
 
     async def play_media(self, chat_id: int, message: Message, media: Media | Track, seek_time: int = 0) -> None:
         client = await db.get_assistant(chat_id)
@@ -114,27 +215,35 @@ class TgCall(PyTgCalls):
             video_flags=(types.MediaStream.Flags.AUTO_DETECT if media.video else types.MediaStream.Flags.IGNORE),
             ffmpeg_parameters=f"-ss {seek_time}" if seek_time > 1 else None,
         )
+        
+        # 🟢 SAFE STREAM / FALLBACK TO 480p
         try:
             await client.play(chat_id=chat_id, stream=stream, config=types.GroupCallConfig(auto_start=False))
-            if not seek_time:
-                media.time = 1
-                await db.add_call(chat_id)
-                play_type = "🎬 Video" if media.video else "🎧 Audio"
-                linked_title = f"<a href='{media.url}'>{media.title}</a>"
-                text = _lang["play_media"].format(media.url, linked_title, media.duration, media.user, play_type)
-                start_timer = f"00:00 {media.duration}"
-                keyboard = buttons.controls(chat_id, timer=start_timer)
-                
-                try:
-                    active_msg = await message.edit_media(media=InputMediaPhoto(media=_thumb, caption=text), reply_markup=keyboard)
-                except MessageIdInvalid:
-                    active_msg = await app.send_photo(chat_id=chat_id, photo=_thumb, caption=text, reply_markup=keyboard)
-                media.message_id = active_msg.id
-                
-                asyncio.create_task(self._prefetch_next(chat_id))
+        except Exception as e:
+            logger.warning(f"720p Change Stream failed, auto-switching to 480p: {e}")
+            stream.video_parameters = types.VideoQuality.SD_480p
+            try:
+                await client.play(chat_id=chat_id, stream=stream, config=types.GroupCallConfig(auto_start=False))
+            except Exception as e2:
+                logger.error(f"Failed to play even at 480p: {e2}")
+                return await self.play_next(chat_id)
 
-        except Exception:
-            await self.play_next(chat_id)
+        if not seek_time:
+            media.time = 1
+            await db.add_call(chat_id)
+            play_type = "🎬 Video" if media.video else "🎧 Audio"
+            linked_title = f"<a href='{media.url}'>{media.title}</a>"
+            text = _lang["play_media"].format(media.url, linked_title, media.duration, media.user, play_type)
+            start_timer = f"00:00 {media.duration}"
+            keyboard = buttons.controls(chat_id, timer=start_timer)
+            
+            try:
+                active_msg = await message.edit_media(media=InputMediaPhoto(media=_thumb, caption=text), reply_markup=keyboard)
+            except MessageIdInvalid:
+                active_msg = await app.send_photo(chat_id=chat_id, photo=_thumb, caption=text, reply_markup=keyboard)
+            media.message_id = active_msg.id
+            
+            asyncio.create_task(self._prefetch_next(chat_id))
 
     async def play_next(self, chat_id: int) -> None:
         current = queue.get_current(chat_id)
@@ -152,10 +261,7 @@ class TgCall(PyTgCalls):
 
                 if not related:
                     try:
-                        related = await yt.get_related(current, self.history[chat_id])
-                        if related:
-                            # Pre-download just in case it wasn't fetched in the background
-                            related.file_path = await yt.download(related.id, video=related.video)
+                        related = await get_related_via_api(current.id, self.history[chat_id])
                     except Exception:
                         related = None
 
@@ -175,22 +281,59 @@ class TgCall(PyTgCalls):
                     matched_title = current.title[:45] + "..." if current and current.title else "Unknown Track"
                     
                     # 1. Chat me normal notice 
-                    notice = await app.send_message(chat_id=chat_id, text=f"<blockquote>▶️ <b>Aᴜᴛᴏᴘʟᴀʏ Nᴇxᴛ :</b>\n🎧 <a href='{media.url}'><i>{short_title}</i></a></blockquote>", disable_web_page_preview=True)
+                    notice = await app.send_message(
+                        chat_id=chat_id, 
+                        text=f"<blockquote>▶️ <b>Aᴜᴛᴏᴘʟᴀʏ Nᴇxᴛ :</b>\n🎧 <a href='{media.url}'><i>{short_title}</i></a></blockquote>", 
+                        disable_web_page_preview=True
+                    )
                     asyncio.create_task(_delete_msg(notice, 6))
 
-                    # 2. LOGGER GROUP ME DETAILED LOG
+                    # 2. LOGGER GROUP ME DETAILED LOG (Spotify Vibe Checker)
                     try:
                         chat_info = await app.get_chat(chat_id)
                         chat_title = chat_info.title
                     except Exception:
                         chat_title = "Unknown Chat"
 
+                    title_lower = current.title.lower() if current else ""
+                    keywords_map = {
+                        "Hindi": ["arijit singh", "shreya ghoshal", "atif aslam", "neha kakkar", "jubin nautiyal", "darshan raval", "armaan malik", "sonu nigam", "badshah", "sunidhi chauhan", "udit narayan", "kumar sanu", "alka yagnik", "sachet tandon", "parampara", "b praak", "vishal mishra", "shilpa rao", "kk", "mohit chauhan", "ar rahman", "pritam", "mithoon"],
+                        "Punjabi": ["sidhu moose wala", "karan aujla", "diljit dosanjh", "ap dhillon", "amrit maan", "shubh", "kaka", "hardy sandhu", "guru randhawa", "jass manak", "parmish verma", "jaani", "ammy virk", "garry sandhu"],
+                        "Bhojpuri": ["pawan singh", "khesari lal yadav", "shilpi raj", "antra singh", "pramod premi", "ritesh pandey", "arvind akela kallu", "gunjan singh", "samar singh", "neha raj"],
+                        "Haryanvi": ["sapna choudhary", "renuka panwar", "gulzaar chhaniwala", "sumit goswami", "raju punjabi", "amit saini rohtakiya", "pranjal dahiya", "md kd", "masoom sharma"],
+                        "English": ["taylor swift", "justin bieber", "ed sheeran", "ariana grande", "the weeknd", "drake", "eminem"]
+                    }
+                    
+                    detected_lang, detected_artist, detected_mood = None, None, None
+                    moods_list = ["sad", "love", "romantic", "lofi", "chill", "party", "mashup", "emotional", "heartbreak", "dance", "dj"]
+                    
+                    for mood in moods_list:
+                        if mood in title_lower:
+                            detected_mood = mood.title()
+                            break
+
+                    for lang_name, kws in keywords_map.items():
+                        for kw in kws:
+                            if kw in title_lower:
+                                detected_lang = lang_name
+                                if kw not in ["hindi", "punjabi", "bhojpuri", "haryanvi", "english"]:
+                                    detected_artist = kw.title()
+                                break
+                        if detected_lang:
+                            break
+
+                    artist_or_lang = " / ".join(filter(None, [detected_artist, detected_lang]))
+                    if not artist_or_lang:
+                        artist_or_lang = "Algorithmic Match"
+                    vibe_focus = detected_mood if detected_mood else "Auto-Match"
+
                     log_text = (
-                        f"<blockquote><b>🔁 AUTO-PLAY TRACK STARTED</b>\n\n"
+                        f"<blockquote><b>📻 SPOTIFY-STYLE RADIO ACTIVE</b>\n\n"
                         f"<b>🥀 GROUP :</b> {chat_title} [{chat_id}]\n"
                         f"<b>🎵 PLAYING :</b> <a href='{media.url}'>{short_title}</a>\n"
-                        f"<b>🔗 MATCHED WITH :</b> {matched_title}\n"
-                        f"<b>⏭ UPCOMING :</b> Autoplay will decide next...</blockquote>"
+                        f"<b>🔗 SEED TRACK :</b> {matched_title}\n"
+                        f"<b>🎭 ARTIST/GENRE :</b> {artist_or_lang}\n"
+                        f"<b>✨ VIBE FOCUS :</b> {vibe_focus}</blockquote>"
                     )
                     
                     try:
@@ -208,11 +351,18 @@ class TgCall(PyTgCalls):
                 return await self.stop(chat_id)
 
         _lang = await lang.get_lang(chat_id)
+        
+        # 🚀 Use API to fetch stream link instead of yt.download()
         if not media.file_path:
             msg = await app.send_message(chat_id=chat_id, text=_lang["play_next"])
-            media.file_path = await yt.download(media.id, video=media.video)
+            media.file_path = await get_stream_via_api(media.id, video=media.video)
         else:
             msg = await app.send_message(chat_id=chat_id, text="⚡")
+
+        # Agar stream link null aati hai kisi error ki wajah se
+        if not media.file_path:
+            await msg.edit_text("⚠️ API Error: Unable to fetch stream URL.")
+            return await self.play_next(chat_id)
 
         media.message_id = msg.id
         await self.play_media(chat_id, msg, media)
