@@ -1,19 +1,87 @@
-# Copyright (c) 2026 THE SHIV
-# Licensed under the MIT License.
-# This file is part of MahiMusic
-# the shiv
-
 import os
 import re
 import asyncio
 import aiohttp
+import random
 import yt_dlp
 from py_yt import VideosSearch, Playlist
 from AloneX import logger, config
 from AloneX.helpers import Track, utils
 
-API_URL = "https://teaminflex.xyz"
+API_URL = os.environ.get("SHRUTI_API_URL", "https://api.shrutibots.site")
+
+API_KEY = os.environ.get("SHRUTI_API_KEY", "ShrutiBotsg3j1kfPzAV3zj6aoqnUr") ## Get This API KEY FROM TELEGRAM BOT USERNAME: @SHRUTIAPIBOT
+
 DOWNLOAD_DIR = "downloads"
+
+
+async def download_song(link: str) -> str:
+    video_id = link.split("v=")[-1].split("&")[0] if "v=" in link else link
+    if not video_id or len(video_id) < 3:
+        return None
+
+    os.makedirs(DOWNLOAD_DIR, exist_ok=True)
+    file_path = os.path.join(DOWNLOAD_DIR, f"{video_id}.mp3")
+    if os.path.exists(file_path) and os.path.getsize(file_path) > 0:
+        return file_path
+
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.get(
+                f"{API_URL}/download",
+                params={"url": video_id, "type": "audio", "api_key": API_KEY},
+                timeout=aiohttp.ClientTimeout(total=300)
+            ) as resp:
+                if resp.status != 200:
+                    return None
+                with open(file_path, "wb") as f:
+                    async for chunk in resp.content.iter_chunked(131072):
+                        f.write(chunk)
+        if os.path.exists(file_path) and os.path.getsize(file_path) > 0:
+            return file_path
+        return None
+    except Exception:
+        if os.path.exists(file_path):
+            try:
+                os.remove(file_path)
+            except Exception:
+                pass
+        return None
+
+
+async def download_video(link: str) -> str:
+    video_id = link.split("v=")[-1].split("&")[0] if "v=" in link else link
+    if not video_id or len(video_id) < 3:
+        return None
+
+    os.makedirs(DOWNLOAD_DIR, exist_ok=True)
+    file_path = os.path.join(DOWNLOAD_DIR, f"{video_id}.mp4")
+    if os.path.exists(file_path) and os.path.getsize(file_path) > 0:
+        return file_path
+
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.get(
+                f"{API_URL}/download",
+                params={"url": video_id, "type": "video", "api_key": API_KEY},
+                timeout=aiohttp.ClientTimeout(total=600)
+            ) as resp:
+                if resp.status != 200:
+                    return None
+                with open(file_path, "wb") as f:
+                    async for chunk in resp.content.iter_chunked(131072):
+                        f.write(chunk)
+        if os.path.exists(file_path) and os.path.getsize(file_path) > 0:
+            return file_path
+        return None
+    except Exception:
+        if os.path.exists(file_path):
+            try:
+                os.remove(file_path)
+            except Exception:
+                pass
+        return None
+
 
 class YouTube:
     def __init__(self):
@@ -23,7 +91,29 @@ class YouTube:
             r"(youtube\.com/(watch\?v=|shorts/|playlist\?list=)|youtu\.be/)"
             r"([A-Za-z0-9_-]{11}|PL[A-Za-z0-9_-]+)([&?][^\s]*)?"
         )
-        self._dl_locks = {}
+        self.cookie_dir = "AloneX/cookies"
+
+    def get_cookies(self):
+        if not os.path.exists(self.cookie_dir):
+            return None
+        cookies_files = [f for f in os.listdir(self.cookie_dir) if f.endswith(".txt")]
+        if not cookies_files:
+            return None
+        return os.path.join(self.cookie_dir, random.choice(cookies_files))
+
+    async def save_cookies(self, urls: list[str]) -> None:
+        logger.info("Saving cookies from urls...")
+        if not os.path.exists(self.cookie_dir):
+            os.makedirs(self.cookie_dir)
+        async with aiohttp.ClientSession() as session:
+            for i, url in enumerate(urls):
+                path = f"{self.cookie_dir}/cookie_{i}.txt"
+                link = "https://batbin.me/api/v2/paste/" + url.split("/")[-1]
+                async with session.get(link) as resp:
+                    resp.raise_for_status()
+                    with open(path, "wb") as fw:
+                        fw.write(await resp.read())
+        logger.info(f"Cookies saved in {self.cookie_dir}.")
 
     def valid(self, url: str) -> bool:
         return bool(re.match(self.regex, url))
@@ -76,158 +166,10 @@ class YouTube:
         if not video_id or len(video_id) < 3:
             return None
 
-        os.makedirs(DOWNLOAD_DIR, exist_ok=True)
-        ext = "mkv" if video else "webm"
-        file_path = os.path.join(DOWNLOAD_DIR, f"{video_id}.{ext}")
-
-        if os.path.exists(file_path) and os.path.getsize(file_path) > 0:
-            return file_path
-
-        if video_id in self._dl_locks:
-            await self._dl_locks[video_id].wait()
-            for file_name in os.listdir(DOWNLOAD_DIR):
-                if file_name.startswith(video_id) and os.path.getsize(os.path.join(DOWNLOAD_DIR, file_name)) > 0:
-                    return os.path.join(DOWNLOAD_DIR, file_name)
-            return None
-
-        lock_event = asyncio.Event()
-        self._dl_locks[video_id] = lock_event
-
-        try:
-            # ==============================
-            # STEP 1: DOWNLOAD VIA API FIRST
-            # ==============================
-            max_retries = 3
-            retry_delay = 1 
-            transient_statuses = {502, 503, 504}
-            api_success = False
-
-            for attempt in range(1, max_retries + 1):
-                try:
-                    async with aiohttp.ClientSession(
-                        timeout=aiohttp.ClientTimeout(total=60)
-                    ) as session:
-                        payload = {"url": video_id, "type": "video" if video else "audio"}
-                        headers = {
-                            "Content-Type": "application/json",
-                            "X-API-KEY": config.YOUTUBE_API_KEY
-                        }
-
-                        async with session.post(f"{API_URL}/download", json=payload, headers=headers) as response:
-                            if response.status == 401:
-                                logger.error("[API] Invalid API key")
-                                break
-
-                            if response.status in transient_statuses:
-                                logger.warning(f"[API] returned {response.status} (attempt {attempt}/{max_retries}) for {video_id}")
-                                if attempt < max_retries:
-                                    await asyncio.sleep(retry_delay)
-                                    continue
-                                break
-
-                            if response.status != 200:
-                                logger.error(f"[API] returned {response.status}")
-                                break
-
-                            try:
-                                data = await response.json()
-                            except Exception as e:
-                                logger.warning(f"[API] invalid JSON response (attempt {attempt}/{max_retries}) for {video_id}: {e}")
-                                if attempt < max_retries:
-                                    await asyncio.sleep(retry_delay)
-                                    continue
-                                break
-
-                            if data.get("status") != "success" or not data.get("download_url"):
-                                logger.error(f"[API] response error: {data}")
-                                if attempt < max_retries:
-                                    await asyncio.sleep(retry_delay)
-                                    continue
-                                break
-
-                            download_link = f"{API_URL}{data['download_url']}"
-
-                        tmp_path = file_path + ".part"
-                        async with session.get(download_link) as file_response:
-                            if file_response.status in transient_statuses:
-                                logger.warning(f"[API] file download returned {file_response.status} (attempt {attempt}/{max_retries}) for {video_id}")
-                                if attempt < max_retries:
-                                    await asyncio.sleep(retry_delay)
-                                    continue
-                                break
-
-                            if file_response.status != 200:
-                                logger.error(f"[API] Download failed ({file_response.status})")
-                                if attempt < max_retries:
-                                    await asyncio.sleep(retry_delay)
-                                    continue
-                                break
-
-                            with open(tmp_path, "wb") as f:
-                                async for chunk in file_response.content.iter_chunked(8192):
-                                    f.write(chunk)
-                                    
-                        os.rename(tmp_path, file_path)
-
-                    if os.path.exists(file_path) and os.path.getsize(file_path) > 0:
-                        api_success = True
-                        return file_path
-
-                    logger.warning(f"[API] downloaded file was empty/missing (attempt {attempt}/{max_retries}) for {video_id}")
-                    if os.path.exists(file_path):
-                        try: os.remove(file_path)
-                        except: pass
-                    if attempt < max_retries:
-                        await asyncio.sleep(retry_delay)
-                        continue
-
-                except (aiohttp.ClientError, asyncio.TimeoutError) as e:
-                    logger.warning(f"[API] network error (attempt {attempt}/{max_retries}) for {video_id}: {e}")
-                    if os.path.exists(file_path + ".part"):
-                        try: os.remove(file_path + ".part")
-                        except: pass
-                    if attempt < max_retries:
-                        await asyncio.sleep(retry_delay)
-                        continue
-
-                except Exception as e:
-                    logger.error(f"Download exception for ID {video_id} (attempt {attempt}/{max_retries}): {e}")
-                    if attempt < max_retries:
-                        await asyncio.sleep(retry_delay)
-                        continue
-
-            # ===============================================
-            # STEP 2: FALLBACK TO YT-DLP WITHOUT COOKIES
-            # ===============================================
-            if not api_success:
-                logger.info(f"[Download] API failed for {video_id}. Falling back to yt-dlp...")
-                
-                ydl_opts = {
-                    "format": "bestvideo+bestaudio/best" if video else "bestaudio/best",
-                    "outtmpl": f"{DOWNLOAD_DIR}/%(id)s.%(ext)s",
-                    "geo_bypass": True,
-                    "nocheckcertificate": True,
-                    # Cookies disabled completely, terminal logs will show up.
-                }
-
-                def _download_yt():
-                    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                        info = ydl.extract_info(f"https://www.youtube.com/watch?v={video_id}", download=True)
-                        return ydl.prepare_filename(info)
-
-                try:
-                    fallback_path = await asyncio.get_event_loop().run_in_executor(None, _download_yt)
-                    if fallback_path and os.path.exists(fallback_path) and os.path.getsize(fallback_path) > 0:
-                        return fallback_path
-                except Exception as e:
-                    logger.error(f"[yt-dlp Fallback] Download failed for {video_id}: {e}")
-                    return None
-
-            return None
-
-        finally:
-            lock_event.set()
-            self._dl_locks.pop(video_id, None)
+        if video:
+            return await download_video(video_id)
+        else:
+            return await download_song(video_id)
 
     def _format_duration(self, seconds: int) -> str:
         seconds = max(int(seconds or 0), 0)
@@ -249,6 +191,8 @@ class YouTube:
 
     def _extract_related(self, video_id: str) -> dict | None:
         opts = {
+            "quiet": True,
+            "no_warnings": True,
             "extract_flat": "in_playlist",
             "skip_download": True,
             "ignoreerrors": True,
@@ -257,9 +201,11 @@ class YouTube:
             "retries": 1,
             "extractor_retries": 1,
             "extractor_args": {"youtube": {"player_client": ["android"]}},
-            "cachedir": False,
-            # Cookies disabled completely here too, terminal logs will show up.
         }
+        cookie = self.get_cookies()
+        if cookie:
+            opts["cookiefile"] = cookie
+
         url = f"https://www.youtube.com/watch?v={video_id}&list=RD{video_id}"
         with yt_dlp.YoutubeDL(opts) as ydl:
             return ydl.extract_info(url, download=False)
@@ -317,6 +263,9 @@ class YouTube:
     async def _related_from_search(
         self, current: Track, played: set[str]
     ) -> Track | None:
+        """Fallback used when YouTube blocks the mix-playlist scrape (common on
+        server/cloud IPs without cookies). Reuses the same search backend that
+        already powers /play, so it works wherever normal search works."""
         queries = []
         if current.channel_name:
             queries.append(f"{current.channel_name}")
@@ -358,6 +307,10 @@ class YouTube:
     async def get_related(
         self, current: Track, played: list[str] | None = None
     ) -> Track | None:
+        """Fetch the next autoplay track, skipping anything already played in
+        this session. Tries YouTube's related mix first, falling back to a
+        text search (same backend as /play) if the mix is blocked or empty —
+        this is common on server/cloud IPs without YouTube cookies set."""
         if not current or not current.id:
             return None
 
@@ -365,13 +318,14 @@ class YouTube:
         played.add(current.id)
 
         related = await self._related_from_mix(current.id, played)
-        
-        if not related:
-            logger.info(f"[Autoplay] Mix returned nothing for {current.id}, trying search fallback.")
-            related = await self._related_from_search(current, played)
-
         if related:
-            logger.info(f"[Autoplay] Found next track: {related.title}")
+            return related
+
+        logger.info(
+            f"[Autoplay] Mix returned nothing for {current.id}, trying search fallback."
+        )
+        related = await self._related_from_search(current, played)
+        if related:
             return related
 
         logger.warning(f"[Autoplay] No related track found for {current.id}.")
