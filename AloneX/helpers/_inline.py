@@ -1,3 +1,20 @@
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# ʏ_ꜱʜᴀᴅᴏᴡ_ᴍᴜꜱɪᴄ
+# ᴀᴅᴠᴀɴᴄᴇᴅ ᴍᴜꜱɪᴄ & ᴠɪᴅᴇᴏ ʙᴏᴛ
+# • ᴍᴜꜱɪᴄ • ᴠɪᴅᴇᴏ • ʟɪᴠᴇ
+# • ꜰᴀꜱᴛ • ꜱᴛᴀʙʟᴇ • ꜱᴇᴄᴜʀᴇ
+# ᴅᴇᴠ : ᴇɴᴀꜰᴜʟ
+# ᴠᴇʀ : ᴠ3.0.0
+# Year : 2026
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+# =====================================================================
+# Project: X_SHADOW_MUSIC
+# Author: ENAFUL
+# Year: 2026
+# Description: Advanced Telegram Music & Automation Bot
+# =====================================================================
+
 import random
 import re
 from pyrogram import enums, types
@@ -151,7 +168,7 @@ class Inline:
             keyboard.append(
                 [
                     self.ikb(text="▶️ 𝐀ᴜᴛᴏ-𝐏ʟᴀʏ", callback_data=f"AUTOPLAY_PANEL_OPEN|{chat_id}", style=style[2]),
-                    self.ikb(text="ᴄʟᴏɴᴇ-ᴍᴇ", url="https://t.me/clone_MUSICrobot", style=style[2]),
+                    self.ikb(text="ᴄʟᴏɴᴇ-ᴍᴇ", url="https://t.me/Music_Bot_Center", style=style[2]),
                 ]
             )
             
@@ -318,8 +335,8 @@ class Inline:
                     self.ikb(text=lang["channel"], url=config.SUPPORT_CHANNEL, style=style[2]),
                 ],
                 [
-                    self.ikb(text="THE SHIV", url=config.OWNER_USERNAME, style=style[0]),
-                ]
+                    self.ikb(text="OWNER", url=config.OWNER_USERNAME, style=style[0]),
+               ]
             ]
         else:
             rows += [

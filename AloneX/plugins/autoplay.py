@@ -1,7 +1,24 @@
-# Copyright (c) 2026 THE SHIV
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# ʏ_ꜱʜᴀᴅᴏᴡ_ᴍᴜꜱɪᴄ
+# ᴀᴅᴠᴀɴᴄᴇᴅ ᴍᴜꜱɪᴄ & ᴠɪᴅᴇᴏ ʙᴏᴛ
+# • ᴍᴜꜱɪᴄ • ᴠɪᴅᴇᴏ • ʟɪᴠᴇ
+# • ꜰᴀꜱᴛ • ꜱᴛᴀʙʟᴇ • ꜱᴇᴄᴜʀᴇ
+# ᴅᴇᴠ : ᴇɴᴀꜰᴜʟ
+# ᴠᴇʀ : ᴠ3.0.0
+# Year : 2026
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+# =====================================================================
+# Project: X_SHADOW_MUSIC
+# Author: ENAFUL
+# Year: 2026
+# Description: Advanced Telegram Music & Automation Bot
+# =====================================================================
+
+# Copyright (c) 2026 OWNER_ENAFUL
 # Licensed under the MIT License.
 # This file is part of MahiMusic
-# DEVELOPER - THE SHIV
+# DEVELOPER - OWNER_ENAFUL
 
 import asyncio
 
@@ -141,7 +158,7 @@ async def autoplay_open_panel_cb(_, query: types.CallbackQuery):
     except AttributeError:
         enabled = False
 
-    banner = getattr(config, "AUTOPLAY_BANNER", getattr(config, "START_IMG", "https://files.catbox.moe/etdhlr.jpg"))
+    banner = getattr(config, "AUTOPLAY_BANNER", getattr(config, "START_IMG", "https://i.supaimg.com/d8919cc0-dc9c-41e0-9c14-2ff75835e603/b079ee72-66b2-48be-bd64-7ebd61b4d30b.png"))
     # Ek naya panel bhejo jisme saare naye controls honge
     await query.message.reply_photo(
         photo=banner,

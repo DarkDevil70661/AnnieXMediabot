@@ -1,7 +1,24 @@
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# ʏ_ꜱʜᴀᴅᴏᴡ_ᴍᴜꜱɪᴄ
+# ᴀᴅᴠᴀɴᴄᴇᴅ ᴍᴜꜱɪᴄ & ᴠɪᴅᴇᴏ ʙᴏᴛ
+# • ᴍᴜꜱɪᴄ • ᴠɪᴅᴇᴏ • ʟɪᴠᴇ
+# • ꜰᴀꜱᴛ • ꜱᴛᴀʙʟᴇ • ꜱᴇᴄᴜʀᴇ
+# ᴅᴇᴠ : ᴇɴᴀꜰᴜʟ
+# ᴠᴇʀ : ᴠ3.0.0
+# Year : 2026
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+# =====================================================================
+# Project: X_SHADOW_MUSIC
+# Author: ENAFUL
+# Year: 2026
+# Description: Advanced Telegram Music & Automation Bot
+# =====================================================================
+
 # Copyright (c) 2025 TheHamkerAlone
 # Licensed under the MIT License.
 # This file is part of AloneXMusic
-# ALONE-CODER - Modified by THE SHIV
+# ALONE-CODER - Modified by OWNER_ENAFUL
 
 import os
 import time

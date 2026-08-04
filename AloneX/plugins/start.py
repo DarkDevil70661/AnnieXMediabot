@@ -1,7 +1,24 @@
-# Copyright (c) 2026 THE SHIV
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# ʏ_ꜱʜᴀᴅᴏᴡ_ᴍᴜꜱɪᴄ
+# ᴀᴅᴠᴀɴᴄᴇᴅ ᴍᴜꜱɪᴄ & ᴠɪᴅᴇᴏ ʙᴏᴛ
+# • ᴍᴜꜱɪᴄ • ᴠɪᴅᴇᴏ • ʟɪᴠᴇ
+# • ꜰᴀꜱᴛ • ꜱᴛᴀʙʟᴇ • ꜱᴇᴄᴜʀᴇ
+# ᴅᴇᴠ : ᴇɴᴀꜰᴜʟ
+# ᴠᴇʀ : ᴠ3.0.0
+# Year : 2026
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+# =====================================================================
+# Project: X_SHADOW_MUSIC
+# Author: ENAFUL
+# Year: 2026
+# Description: Advanced Telegram Music & Automation Bot
+# =====================================================================
+
+# Copyright (c) 2026 OWNER_ENAFUL
 # Licensed under the MIT License.
 # This file is part of MahiMusic
-# DEVELOPER - THE SHIV
+# DEVELOPER - OWNER_ENAFUL
 
 import asyncio
 from pyrogram import enums, filters, types

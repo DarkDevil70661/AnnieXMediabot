@@ -1,3 +1,20 @@
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# ʏ_ꜱʜᴀᴅᴏᴡ_ᴍᴜꜱɪᴄ
+# ᴀᴅᴠᴀɴᴄᴇᴅ ᴍᴜꜱɪᴄ & ᴠɪᴅᴇᴏ ʙᴏᴛ
+# • ᴍᴜꜱɪᴄ • ᴠɪᴅᴇᴏ • ʟɪᴠᴇ
+# • ꜰᴀꜱᴛ • ꜱᴛᴀʙʟᴇ • ꜱᴇᴄᴜʀᴇ
+# ᴅᴇᴠ : ᴇɴᴀꜰᴜʟ
+# ᴠᴇʀ : ᴠ3.0.0
+# Year : 2026
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+# =====================================================================
+# Project: X_SHADOW_MUSIC
+# Author: ENAFUL
+# Year: 2026
+# Description: Advanced Telegram Music & Automation Bot
+# =====================================================================
+
 from os import getenv
 from dotenv import load_dotenv
 
@@ -21,9 +38,9 @@ class Config:
         self.SESSION2 = getenv("SESSION2", None)
         self.SESSION3 = getenv("SESSION3", None)
 
-        self.SUPPORT_CHANNEL = getenv("SUPPORT_CHANNEL", "https://t.me/betabot_support")
-        self.SUPPORT_CHAT = getenv("SUPPORT_CHAT", "https://t.me/betabot_hub")
-        self.OWNER_USERNAME = getenv("OWNER_USERNAME", "https://t.me/sukoon_s")
+        self.SUPPORT_CHANNEL = getenv("SUPPORT_CHANNEL", "https://t.me/Music_Bot_Center_x")
+        self.SUPPORT_CHAT = getenv("SUPPORT_CHAT", "https://t.me/Music_Bot_Center")
+        self.OWNER_USERNAME = getenv("OWNER_USERNAME", "https://t.me/OWNER_ENAFUL")
 
         self.AUTO_END: bool = getenv("AUTO_END", False)
         self.AUTO_LEAVE: bool = getenv("AUTO_LEAVE", False)
@@ -33,7 +50,7 @@ class Config:
         self.DURATION_LIMIT = int(getenv("DURATION_LIMIT", "17000"))
         self.PLAYLIST_LIMIT = int(getenv("PLAYLIST_LIMIT", "200"))
         self.YOUTUBE_API_KEY = getenv("YOUTUBE_API_KEY", "INFLEX99600328D")
-        self.DEFAULT_THUMB = getenv("DEFAULT_THUMB", "https://n.uguu.se/EBVPCnuG.jpg")
+        self.DEFAULT_THUMB = getenv("DEFAULT_THUMB", "https://i.supaimg.com/d8919cc0-dc9c-41e0-9c14-2ff75835e603/d7f04733-5c23-4dfc-a30f-50490c4a8022.png")
         
         # --- NEW PING VIDEO LINK ADDED HERE ---
         self.PING_IMG = getenv("PING_IMG", "https://radare.arzfun.com/api/tg/file?id=BAACAgUAAxkBAAEMsPNqV_Zr0LC9pwmtzWakOIchnXuIdQACiyAAAj56wVbxBM2QDTx3Fz0E&name=ENBUTHB6dnrNmQdH3dLRWe.mp4&header=video/mp4")
@@ -49,3 +66,4 @@ class Config:
         ]
         if missing:
             raise SystemExit(f"Missing required environment variables: {', '.join(missing)}")
+
