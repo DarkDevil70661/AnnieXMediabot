@@ -1,104 +1,162 @@
+# 🎵 Sanki Music Bot
 
-<h2 align="center">
-    𖢵 ᴀʅσηҽ χ мυѕι¢ 𖢵
+<p align="center">
+  <img src="https://i.supaimg.com/d8919cc0-dc9c-41e0-9c14-2ff75835e603/d7f04733-5c23-4dfc-a30f-50490c4a8022.png" width="100%">
+</p>
 
-★ 𝙷𝙴𝚁𝙾𝙺𝚄 + 𝚅𝙿𝚂 ★
-</h2>
+<h1 align="center">🚀 Sanki Music Bot</h1>
 
-[![Typing SVG](https://readme-typing-svg.herokuapp.com/?lines=ㅤ+𝚆𝙴𝙻𝙲𝙾𝙼𝙴+𝚃𝙾+SHIV+𝙼𝚄𝚂𝙸𝙲+𝚁𝙴𝙿𝙾+;ㅤ+𝚃𝙷𝙸𝚂+𝙸𝚂+𝙰+𝙰𝙳𝚅𝙰𝙽𝙲𝙴+𝙼𝚄𝚂𝙸𝙲+𝙱𝙾𝚃;𝙿𝙾𝚆𝙴𝚁𝙴𝙳+𝙱𝚈+☞+BETA+BOT+HUB)](https://t.me/OWNER_ENAFUL)
+<p align="center">
+The Ultimate Advanced Telegram VC Music Bot
+</p>
 
-
-<b>Telegram Group Calls Streaming Bot</b><br>
-Supports YouTube, Spotify, Resso, Apple Music, SoundCloud and M3U8 links.
-
-
-
-<img src="https://readme-typing-svg.herokuapp.com?color=FF0000&width=420&lines=⚠️𝗙𝗢𝗥𝗞+𝗔𝗹𝗼𝗻𝗲𝗫+𝗥𝗘𝗣𝗢+𝗕𝗘𝗙𝗢𝗥𝗘+𝗗𝗘𝗣𝗟𝗢𝗬⚠️">
-
-
-AloneXMusic lets you stream high-quality and low-latency audio and video playback into telegram group video chats.<br>
-Built with Python, Pyrogram, and Py-TgCalls, it’s optimized for reliability and easy deployment on Heroku, VPS, or Docker.
-</div>
-
-<hr>
-
-<h2>🔥 Features</h2>
-
-- 🎧 Stream low-latency audio in real time to <b>Telegram group video chats</b>
-- 🌐 Supports multiple platforms like <b>YouTube, Spotify, Apple Music, SoundCloud</b>
-- ⚡ Advanced queue management with auto-play
-- ⚙️ Easy deployment — works on Local, VPS, or Heroku
-- ❤️ Built with Python
-<hr>
-
-<h2>☁️ Manual Deployment</h2>
-
-<h3 align="center">
-    ─「 ᴅᴇᴩʟᴏʏ ᴏɴ ʜᴇʀᴏᴋᴜ 」─
-
-<h3> 𝗛𝗘𝗥𝗢𝗞𝗨 𝗗𝗘𝗣𝗟𝗢𝗬𝗠𝗘𝗡𝗧 𝗕𝗨𝗧𝗧𝗢𝗡 </h3>
-</h3>
-
-[![Deploy To Heroku](https://graph.org/file/826b0a2fc82db8328a113.png)](https://dashboard.heroku.com/new?template=https://github.com/istkharroohi78/shiv-official)
-
-<h2 align="center">
-
-<h3 align="center">
-    ─「 ᴅᴇᴩʟᴏʏ ᴏɴ ʟᴏᴄᴀʟ ʜᴏsᴛ/ ᴠᴘs 」─
-</h3>
-
-### 🔧 Quick Setup
-
-1. **Upgrade & Update:**
-   ```bash
-   sudo apt-get update && sudo apt-get upgrade -y
-   ```
-
-2. **Install Required Packages:**
-   ```bash
-   sudo apt-get install python3-pip ffmpeg -y
-   ```
-3. **Setting up PIP**
-   ```bash
-   sudo pip3 install -U pip
-   ```
-4. **Installing Node**
-   ```bash
-   curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.38.0/install.sh | bash && source ~/.bashrc && nvm install v18
-   ```
-5. **Clone the Repository**
-   ```bash
-   git clone https://github.com/TeamAloneOp/AloneX && cd AloneX
-   ```
-6. **Install Requirements**
-   ```bash
-   pip3 install -U -r requirements.txt
-   ```
-7. **Installing tmux**
-    ```bash
-    sudo apt install tmux -y && tmux
-   ```
-8. **Editing Vars:**
-   ```bash
-   bash setup
-   ```
-9. **Run the Bot**
-    ```bash
-    bash start
-    ```
+<p align="center">
+  <img src="https://img.shields.io/badge/Python-3.11-blue?style=for-the-badge">
+  <img src="https://img.shields.io/badge/Pyrogram-Latest-red?style=for-the-badge">
+  <img src="https://img.shields.io/badge/Pytgcalls-Stable-green?style=for-the-badge">
+  <img src="https://img.shields.io/badge/24×7-Active-orange?style=for-the-badge">
+</p>
 
 ---
-━━━━━━━━━━━━━━━━━━━━
 
-<h3 align="center">
-    ─「 sᴜᴩᴩᴏʀᴛ 」─
-</h3>
+## ✨ About
+
+**Sanki Music Bot** is an **Advanced, Superfast & Smart Telegram Voice Chat Music Bot** built with modern technologies.
+
+Designed for smooth performance, blazing-fast response, and crystal-clear audio playback in Telegram group voice chats.
+
+---
+
+## ⚡ Features
+
+- 🎵 High Quality Music Streaming
+- 🚀 Ultra Fast Playback
+- 🎧 Low Latency Voice Chat
+- 🔁 24×7 Stable Performance
+- 📂 Playlist Support
+- 🔎 YouTube Search
+- ❤️ Beautiful User Interface
+- 👮 Admin Controls
+- 📜 Queue System
+- 🔀 Shuffle Music
+- ⏩ Skip / Pause / Resume
+- 🔊 Volume Control
+- 🌍 Multi-Language Support
+- 🛡 Secure & Optimized
+
+---
+
+# 🛠 Built With
+
+This Advanced Superfast and Smart VC Music Bot is powered by modern libraries and packages including:
+
+- 🐍 Python
+- 🔥 Pyrogram
+- 🎙 PyTgCalls
+- ▶️ YouTube-Search-Python
+- 🔐 TgCrypto
+- 🎶 FFmpeg
+- 🌐 yt-dlp
+- ⚡ AsyncIO
+
+Delivering **High-Quality**, **Ultra-Fast**, and **Low-Latency** audio playback in Telegram Group Voice Chats.
+
+---
+
+## 🚀 Installation
+
+```bash
+git clone https://github.com/USERNAME/SankiMusicBot
+
+cd SankiMusicBot
+
+pip install -U -r requirements.txt
+
+python3 -m SankiMusic
+```
+
+---
+
+## ⚙ Environment Variables
+
+Create a `.env` file.
+
+```env
+API_ID=
+API_HASH=
+BOT_TOKEN=
+STRING_SESSION=
+MONGO_DB_URI=
+LOG_GROUP_ID=
+OWNER_ID=
+```
+
+---
+
+## 📦 Deploy
+
+- VPS
+- Docker
+- Railway
+- Render
+- Koyeb
+- Heroku
+- Local Machine
+
+---
+
+## ❤️ Why Choose Sanki Music Bot?
+
+✔ Advanced Architecture
+
+✔ Modern Libraries
+
+✔ Lightning Fast
+
+✔ Premium UI
+
+✔ Low Resource Usage
+
+✔ Crystal Clear Audio
+
+✔ Stable Voice Chat
+
+✔ Easy Deployment
+
+✔ Secure System
+
+---
+
+## 📊 Performance
+
+| Feature | Status |
+|---------|--------|
+| Audio Quality | ⭐⭐⭐⭐⭐ |
+| Speed | ⭐⭐⭐⭐⭐ |
+| Stability | ⭐⭐⭐⭐⭐ |
+| Security | ⭐⭐⭐⭐⭐ |
+| Voice Chat | ⭐⭐⭐⭐⭐ |
+
+---
+
+## 👑 Owner
+
+**X Shadow**
+
+Telegram: **@YOUR_USERNAME**
+
+---
+
+## ⭐ Support
+
+If you like this project, don't forget to ⭐ Star this repository.
+
+---
 
 <p align="center">
-<a href="https://telegram.me/AloneBotSupport"><img src="https://img.shields.io/badge/-Support%20Group-blue.svg?style=for-the-badge&logo=Telegram"></a>
-</p>
 
-<p align="center">
-<a href="https://telegram.me/AloneUpdates"><img src="https://img.shields.io/badge/-Support%20Channel-blue.svg?style=for-the-badge&logo=Telegram"></a>
-</p>
+Made with ❤️ using **Pyrogram + PyTgCalls**
 
+**Your Ultimate Music Companion 🎶**
+
+</p>
