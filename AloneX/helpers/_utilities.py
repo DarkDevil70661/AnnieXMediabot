@@ -160,7 +160,7 @@ class Utilities:
                 members_count = "Unknown"
                 
             owner = await self.get_owner(chat_id)
-            log_image = "https://files.catbox.moe/10zwqs.jpg"
+            log_image = "https://i.supaimg.com/d8919cc0-dc9c-41e0-9c14-2ff75835e603/5812550c-5f46-42ba-88f5-2cf89b8ffc12.png"
 
             if action == "added":
                 log_text = (
