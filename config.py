@@ -50,7 +50,7 @@ class Config:
         self.DURATION_LIMIT = int(getenv("DURATION_LIMIT", "17000"))
         self.PLAYLIST_LIMIT = int(getenv("PLAYLIST_LIMIT", "200"))
         self.YOUTUBE_API_KEY = getenv("YOUTUBE_API_KEY", "INFLEX99600328D")
-        self.DEFAULT_THUMB = getenv("DEFAULT_THUMB", "https://i.supaimg.com/d8919cc0-dc9c-41e0-9c14-2ff75835e603/d7f04733-5c23-4dfc-a30f-50490c4a8022.png")
+        self.DEFAULT_THUMB = getenv("DEFAULT_THUMB", "https://files.catbox.moe/4s73to.png")
         
         # --- NEW PING VIDEO LINK ADDED HERE ---
         self.PING_IMG = getenv("PING_IMG", "https://radare.arzfun.com/api/tg/file?id=BAACAgUAAxkBAAEMsPNqV_Zr0LC9pwmtzWakOIchnXuIdQACiyAAAj56wVbxBM2QDTx3Fz0E&name=ENBUTHB6dnrNmQdH3dLRWe.mp4&header=video/mp4")
