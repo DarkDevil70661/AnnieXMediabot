@@ -38,8 +38,8 @@ class Config:
         self.SESSION2 = getenv("SESSION2", None)
         self.SESSION3 = getenv("SESSION3", None)
 
-        self.SUPPORT_CHANNEL = getenv("SUPPORT_CHANNEL", "https://t.me/Music_Bot_Center_x")
-        self.SUPPORT_CHAT = getenv("SUPPORT_CHAT", "https://t.me/Music_Bot_Center")
+        self.SUPPORT_CHANNEL = getenv("SUPPORT_CHANNEL", "https://t.me/music_bots_support")
+        self.SUPPORT_CHAT = getenv("SUPPORT_CHAT", "https://t.me/bots_support1")
         self.OWNER_USERNAME = getenv("OWNER_USERNAME", "https://t.me/OWNER_ENAFUL")
 
         self.AUTO_END: bool = getenv("AUTO_END", False)
