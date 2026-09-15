@@ -1,13 +1,3 @@
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━
-# ʏ_ꜱʜᴀᴅᴏᴡ_ᴍᴜꜱɪᴄ
-# ᴀᴅᴠᴀɴᴄᴇᴅ ᴍᴜꜱɪᴄ & ᴠɪᴅᴇᴏ ʙᴏᴛ
-# • ᴍᴜꜱɪᴄ • ᴠɪᴅᴇᴏ • ʟɪᴠᴇ
-# • ꜰᴀꜱᴛ • ꜱᴛᴀʙʟᴇ • ꜱᴇᴄᴜʀᴇ
-# ᴅᴇᴠ : ᴇɴᴀꜰᴜʟ
-# ᴠᴇʀ : ᴠ3.0.0
-# Year : 2026
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
 # =====================================================================
 # Project: X_SHADOW_MUSIC
 # Author: ENAFUL
@@ -77,8 +67,7 @@ async def start(_, message: types.Message):
     await message.reply_video(
         video=config.START_VIDEO,  # Make sure START_VIDEO is defined in your config.py
         caption=_text,
-        reply_markup=key,
-        quote=not private
+        reply_markup=key
     )
 
     if private:
