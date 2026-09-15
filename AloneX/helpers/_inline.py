@@ -168,7 +168,7 @@ class Inline:
             keyboard.append(
                 [
                     self.ikb(text="▶️ 𝐀ᴜᴛᴏ-𝐏ʟᴀʏ", callback_data=f"AUTOPLAY_PANEL_OPEN|{chat_id}", style=style[2]),
-                    self.ikb(text="ᴄʟᴏɴᴇ-ᴍᴇ", url="https://t.me/Music_Bot_Center", style=style[2]),
+                    self.ikb(text="ᴄʟᴏɴᴇ-ᴍᴇ", url="https://t.me/RituMusicCloneBot", style=style[2]),
                 ]
             )
             
